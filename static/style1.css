@@ -1,0 +1,122 @@
+/* Global body styling */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #d3d3d3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Login box container */
+.container {
+    width: 950px;
+    height: 650px;
+    display: flex;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+/* Left image panel */
+.left-panel {
+    flex: 1;
+    /* background-color: #1f1f1f; */
+    /* background-color: #88b4f5; */
+    background-color: #074861;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.left-panel img {
+    max-width: 90%;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* Right form panel */
+.right-panel {
+    flex: 1;
+    padding: 40px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #0049b7;
+}
+
+h2 {
+    font-size: 20px;
+    margin-bottom: 30px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin: 10px 0 5px;
+    font-size: 14px;
+}
+
+input[type="text"],
+input[type="password"] {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.right {
+    text-align: right;
+    margin-bottom: 20px;
+}
+
+.right a {
+    font-size: 12px;
+    color: #666;
+    text-decoration: none;
+}
+
+button[type="submit"] {
+    /* background-color: #0049b7; */
+    background-color: #074861;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.divider {
+    text-align: center;
+    color: #aaa;
+    margin-bottom: 20px;
+}
+
+.signup {
+    text-align: center;
+    font-size: 14px;
+}
+
+.signup a {
+    color: #0049b7;
+    text-decoration: none;
+}
+.right-panel img{
+    width: 140px;
+}

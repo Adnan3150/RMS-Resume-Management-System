@@ -1,0 +1,64 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SPSoft Login</title>
+    <link rel="stylesheet" href="/static/style2.css">
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <img src="/static/aI.PNG" alt="Chatbot Illustration">
+        </div>
+
+        <div class="right-panel">
+            <img src="/static/spsoft.svg" alt="Logo">
+            <h2>Create Your Account</h2>
+            <form action="/signup" method="post">
+                <label for="username">User Name</label>
+                <input type="text" name="username" id="username" required>
+                
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email" required>
+
+                <label for="EmpID">Employee ID</label>
+                <input type="text" name="EmpID" id="EmpID" required>
+
+                <!-- New Role Dropdown -->
+                <label for="role">Select Role</label>
+                <select name="role" id="role" required>
+                    <option value="" disabled selected>Select your role</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Recruiter">Recruiter</option>
+                    <option value="HR Manager">HR Manager</option>
+                    <option value="HR Executive">HR Executive</option>
+                </select>
+
+                <label for="password">Password</label>
+                <input type="password" name="password" id="password"
+                       pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+                       title="Must include uppercase, lowercase, number, and special character. Min 8 characters."
+                       required>
+
+                <label for="confirm_password">Confirm Password</label>
+                <input type="password" name="confirm_password" id="confirm_password" required>
+
+                <button type="submit">Sign Up</button>
+            </form>
+
+            <p class="signup">Already have an account? <a href="/login">Login</a></p>
+        </div>
+    </div>
+
+    {% if success %}
+    <script>
+        alert("{{ success }}");
+    </script>
+    {% endif %}
+
+    {% if error %}
+    <div style="color: red; margin-bottom: 10px;">
+        {{ error }}
+    </div>
+    {% endif %}
+</body>
+</html>

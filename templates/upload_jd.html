@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Upload Job Description</title>
+  <link rel="stylesheet" href="static/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    /* Body and page layout */
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+ 
+    /* Container cards */
+    .container {
+      max-width: 600px;
+      width: 100%;
+      margin: 30px 0;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      padding: 30px;
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .container:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 60px rgba(0,0,0,0.2);
+    }
+ 
+    /* Headings */
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 24px;
+    }
+ 
+    /* Input groups */
+    .input-group { margin-bottom: 15px; text-align: left; }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #555;
+      font-size: 14px;
+    }
+    input[type="file"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      outline: none;
+      font-size: 14px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    input[type="file"]:focus,
+    input[type="number"]:focus,
+    textarea:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 8px rgba(102,126,234,0.3);
+    }
+    textarea { resize: vertical; min-height: 100px; }
+ 
+    /* Buttons */
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+    }
+ 
+    /* File list */
+    .file-list {
+      text-align: left;
+      margin-top: 15px;
+      padding: 10px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      background: #f9fafb;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+ 
+    /* Hidden */
+    .hidden { display: none; }
+ 
+    /* Separator */
+    .separator {
+      text-align: center;
+      margin: 20px 0;
+      font-weight: bold;
+      color: #fff;
+    }
+ 
+    /* Table styling to match resume extracted table */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+      color: #64748f;
+    }
+    th {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+    td:first-child {
+      font-weight: 600;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      width: 25%;
+    }
+    ul { margin: 0; padding-left: 20px; }
+  </style>
+</head>
+<body>
+ 
+  <!-- First container: Upload JD -->
+  <div class="container">
+    <div id="uploadSection">
+      <h2>Upload Job Description</h2>
+      <form id="uploadForm">
+        <div class="input-group">
+          <label for="file">Upload JD File</label>
+          <input type="file" id="file" name="file" />
+        </div>
+        <div class="input-group">
+          <label for="text">Or Paste JD Text</label>
+          <textarea id="text" name="text" placeholder="Paste job description here..."></textarea>
+        </div>
+        <button type="submit" class="btn">Submit</button>
+      </form>
+    </div>
+ 
+    <div id="uploadedSection" class="hidden">
+      <h2>Uploaded Files</h2>
+      <div id="fileList" class="file-list"></div>
+      <button id="extractBtn" class="btn">Extract JD Files</button>
+    </div>
+  </div>
+ 
+  <div class="separator">----- or -----</div>
+ 
+  <!-- Second container: Fetch JD by ID -->
+  <div class="container">
+    <div id="fetchSection">
+      <h2>Fetch JD by ID</h2>
+      <form id="fetchForm">
+        <div class="input-group">
+          <label for="jdId">Enter JD ID </label>
+          <input type="number" id="jdId" name="jdId" min="0" placeholder="Enter JD ID..." />
+        </div>
+        <button type="submit" class="btn">Fetch JD</button>
+      </form>
+    </div>
+  </div>
+ 
+<script>
+  const uploadForm = document.getElementById("uploadForm");
+  const fileListDiv = document.getElementById("fileList");
+  const uploadedSection = document.getElementById("uploadedSection");
+  const extractBtn = document.getElementById("extractBtn");
+  const fetchForm = document.getElementById("fetchForm");
+  let jd_data=null;
+  uploadForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const formData = new FormData();
+    const file = document.getElementById("file").files[0];
+    const text = document.getElementById("text").value;
+ 
+    if (!file && !text) { alert("Please upload a file or paste JD text!"); return; }
+    if (file) formData.append("jd_file", file);
+    if (text) formData.append("jd_txt", text);
+ 
+    try {
+      const res = await axios.post("http://192.168.5.142:8000/upload/jd", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      jd_data=res.data
+      alert(res.data.message || "File uploaded successfully!");
+      // const filesRes = await axios.post("http://192.168.5.142:8000/upload/jd_files",jd_data);
+      showUploadedFiles(jd_data.jd_info);
+    } catch (err) { alert("Upload failed. Try again."); }
+  });
+ 
+  function showUploadedFiles(files) {
+    uploadedSection.classList.remove("hidden");
+    fileListDiv.innerHTML = "";
+    files.forEach(f => { const p = document.createElement("p"); p.textContent = f; fileListDiv.appendChild(p); });
+  }
+ 
+  extractBtn.addEventListener("click", async function () {
+    try {
+      const res = await axios.post("http://192.168.5.142:8000/jd/extract_fields",jd_data);
+      const jdData = res.data.processed_files;
+      openJDTable(jdData, "Extracted Job Description Data");
+    } catch (err) { alert("Failed to fetch JD data."); }
+  });
+ 
+  fetchForm.addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const jdId = parseInt(document.getElementById("jdId").value);
+    if (isNaN(jdId)) { alert("Please enter a valid JD ID!"); return; }
+ 
+    try {
+      const res = await axios.get(`http://192.168.5.129:8000/fetch/jd?jd_id=${jdId}`);
+      if (res.status !== 200) { alert(res.data.detail || "Data not exists"); return; }
+      const jdData = res.data.Jd_details;
+      if (!jdData || Object.keys(jdData).length === 0) { alert("Data not exists"); return; }
+      openJDTable(jdData, `Job Description ID: ${jdId}`);
+    } catch (err) {
+      if (err.response && err.response.data && err.response.data.detail) alert(err.response.data.detail);
+      else { console.error(err); alert("Failed to fetch data from backend."); }
+    }
+  });
+ 
+  function openJDTable(data, title) {
+    const newWindow = window.open("", "_blank");
+    newWindow.document.write(`
+      <html>
+      <head>
+        <title>${title}</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+          body { font-family:"Segoe UI", Tahoma, Verdana; padding:30px; background:#f8f9fa; color:#000; }
+          h2 { text-align:center; margin-bottom:30px; }
+          table { border-collapse: collapse; width:100%; margin-bottom:25px; background:#fff; border-radius:8px; box-shadow:0 0 8px rgba(0,0,0,0.1); }
+          th, td { border:1px solid #ddd; padding:10px 12px; vertical-align:top; color:#64748f; }
+          th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#fff; }
+          td:first-child { font-weight:600; width:25%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#fff; }
+          ul { margin:0; padding-left:20px; }
+        </style>
+      </head>
+      <body>
+        <h2>${title}</h2>
+        <div id="dataContainer"></div>
+      </body>
+      </html>
+    `);
+    const container = newWindow.document.getElementById("dataContainer");
+    container.appendChild(createStructuredTable(data, newWindow.document));
+  }
+ 
+  function createStructuredTable(data, docRef = document) {
+    const table = docRef.createElement("table");
+    for (const key in data) {
+      const row = docRef.createElement("tr");
+      const tdKey = docRef.createElement("td");
+      tdKey.textContent = key;
+      const tdValue = docRef.createElement("td");
+      if (typeof data[key] === "object" && data[key] !== null) {
+        if (Array.isArray(data[key])) {
+          const list = docRef.createElement("ul");
+          data[key].forEach(item => {
+            const li = docRef.createElement("li");
+            if (typeof item === "object") li.appendChild(createStructuredTable(item, docRef));
+            else li.textContent = item;
+            list.appendChild(li);
+          });
+          tdValue.appendChild(list);
+        } else { tdValue.appendChild(createStructuredTable(data[key], docRef)); }
+      } else { tdValue.textContent = data[key]; }
+      row.appendChild(tdKey);
+      row.appendChild(tdValue);
+      table.appendChild(row);
+    }
+    return table;
+  }
+</script>
+ 
+</body>
+</html>

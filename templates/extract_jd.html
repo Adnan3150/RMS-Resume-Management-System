@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extract JD</title>
+  <style>
+    /* Centered layout */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #ffffff; /* White background */
+    }
+
+    /* Button */
+    #extractBtn {
+      padding: 18px 35px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #6a11cb, #2575fc);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    #extractBtn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.35);
+    }
+  </style>
+</head>
+<body>
+  <button id="extractBtn">Extract JD</button>
+
+  <script>
+    const button = document.getElementById('extractBtn');
+
+    // Redirect to FastAPI route on click
+    button.addEventListener('click', () => {
+      window.location.href = "http://192.168.5.140:8000/extract/jd";
+    });
+  </script>
+</body>
+</html>

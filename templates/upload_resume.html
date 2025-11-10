@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Resume Management System</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1.main-heading {
+      color: #fff;
+      font-size: 32px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .container-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      width: 100%;
+      max-width: 700px;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      padding: 30px;
+    }
+
+    h2 { margin-bottom: 25px; color: #333; font-size: 24px; text-align: center; }
+
+    .input-group { margin-bottom: 15px; text-align: left; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; color: #555; font-size: 14px; }
+    input[type="number"], input[type="file"] {
+      width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px;
+      font-size: 14px; transition: border-color 0.3s;
+    }
+    input[type="number"]:focus, input[type="file"]:focus { outline: none; border-color: #667eea; }
+
+    .btn {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff; font-size: 16px; font-weight: 600; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s; margin-top: 10px;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .file-list { text-align: left; margin-top: 15px; padding: 10px; border: 1px solid #eee;
+      border-radius: 8px; background: #fafafa; max-height: 150px; overflow-y: auto; }
+    .file-list p { margin: 6px 0; color: #666; font-size: 14px; }
+
+    /* Loader */
+    .loader-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+    .loader-overlay.active { display: flex; }
+
+    .loader-content {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loader-message {
+      font-size: 18px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: none;
+      z-index: 3000;
+      min-width: 300px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .toast.active { display: block; }
+    .toast.success { border-left: 4px solid #10b981; }
+    .toast.error { border-left: 4px solid #ef4444; }
+
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .toast-message {
+      font-size: 14px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    /* Modal */
+    .modal-overlay { 
+      display: none; 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      right: 0; 
+      bottom: 0;
+      background: rgba(0,0,0,0.8); 
+      z-index: 1000; 
+      overflow-y: auto; 
+    }
+    .modal-overlay.active { display: block; }
+
+    .modal-content { 
+      background: white; 
+      width: 100%; 
+      height: 100vh; 
+      margin: 0;
+      border-radius: 0; 
+      overflow-y: auto; 
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white; 
+      padding: 30px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .modal-header h2 { margin: 0; font-size: 24px; color: white; }
+    .modal-close { background: none; border: none; color: white; font-size: 30px; cursor: pointer; }
+
+    .modal-body { padding: 20px 40px; overflow-y: auto; overflow-x: auto; }
+
+    /* Resume Card */
+    .resume-card {
+      background: #f9fafb; 
+      border: 1px solid #e5e7eb; 
+      border-radius: 10px;
+      margin-bottom: 25px; 
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
+      position: relative;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white; 
+      padding: 16px 20px; 
+      font-size: 18px; 
+      font-weight: 600;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .resume-table { 
+      width: 100%; 
+      border-collapse: collapse; 
+    }
+    .resume-table td { 
+      padding: 14px 16px; 
+      vertical-align: top; 
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .resume-table tr:last-child td { border-bottom: none; }
+    .resume-table td:first-child { 
+      font-weight: 600; 
+      background: #f3f4f6; 
+      color: #667eea; 
+      width: 30%; 
+    }
+    .resume-table td:last-child { 
+      color: #64748f; 
+      width: 70%; 
+      white-space: pre-wrap; 
+    }
+
+    input[type="checkbox"].card-checkbox {
+      position: absolute; 
+      top: 15px; 
+      right: 15px;
+      appearance: none; 
+      width: 22px; 
+      height: 22px;
+      border: 2px solid white; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      transition: all 0.3s ease;
+      background: rgba(255,255,255,0.2);
+    }
+
+    input[type="checkbox"].card-checkbox:checked {
+      background: white;
+      border-color: white;
+    }
+
+    input[type="checkbox"].card-checkbox:checked::after {
+      content: "✓"; 
+      position: relative; 
+      left: 4px; 
+      top: -2px; 
+      color: #667eea; 
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    /* Score Card Styles */
+    .score-card {
+      background: #fff;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .score-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .score-card.shortlisted {
+      border-color: #10b981;
+      background: linear-gradient(to right, #ecfdf5 0%, #fff 10%);
+    }
+
+    .score-card.not-shortlisted {
+      border-color: #ef4444;
+      background: linear-gradient(to right, #fef2f2 0%, #fff 10%);
+    }
+
+    .score-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .score-header-left { flex: 1; }
+
+    .score-header-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .score-header-subtitle {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .score-badge {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .badge-shortlisted {
+      background: #10b981;
+      color: white;
+    }
+
+    .badge-not-shortlisted {
+      background: #ef4444;
+      color: white;
+    }
+
+    .score-body {
+      padding: 24px;
+    }
+
+    .overall-score {
+      text-align: center;
+      padding: 24px;
+      background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+
+    .overall-score-value {
+      font-size: 56px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .overall-score-label {
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 600;
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .score-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .metric-card {
+      background: #f9fafb;
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .score-summary {
+      background: #f0f9ff;
+      border-left: 4px solid #3b82f6;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .score-summary-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .score-summary-text {
+      font-size: 14px;
+      color: #334155;
+      line-height: 1.6;
+    }
+
+    .missing-skills {
+      background: #fef2f2;
+      border-left: 4px solid #ef4444;
+      padding: 16px;
+      border-radius: 8px;
+    }
+
+    .missing-skills-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #991b1b;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .missing-skills-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .missing-skills-list li {
+      font-size: 14px;
+      color: #dc2626;
+      padding: 6px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .missing-skills-list li:before {
+      content: "✗";
+      position: absolute;
+      left: 0;
+      font-weight: 700;
+    }
+
+    /* Action Button */
+    .modal-action-btn {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 250px;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      display: none;
+      z-index: 1100;
+      border: none;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .modal-action-btn.active { display: block; }
+
+    .modal-action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+<h1 class="main-heading">Resume Management System</h1>
+
+<div class="container-wrapper">
+  <!-- Upload & Extract Section -->
+  <div class="container">
+    <h2>📤 Upload & Extract Resumes</h2>
+    <form id="resumeForm">
+      <div class="input-group">
+        <label for="resumeJdId">Enter JD ID *</label>
+        <input type="number" id="resumeJdId" placeholder="Enter JD ID..." required />
+      </div>
+      <div class="input-group">
+        <label for="resumeFiles">Select Resumes</label>
+        <input type="file" id="resumeFiles" multiple accept=".pdf,.doc,.docx,.txt,.zip" />
+      </div>
+      <button type="submit" class="btn">Upload Resumes</button>
+      <button type="button" id="extractResumeBtn" class="btn" style="display:none;">Extract Resume Data</button>
+    </form>
+    <div id="resumeFileList" class="file-list"></div>
+  </div>
+
+  <!-- Fetch Resume Section -->
+  <div class="container">
+    <h2>🔍 Fetch Resumes</h2>
+    <div class="input-group">
+      <label for="fetchJdId">JD ID</label>
+      <input type="number" id="fetchJdId" placeholder="Enter JD ID..." />
+    </div>
+    <div class="input-group">
+      <label for="fetchResumeId">Resume ID</label>
+      <input type="number" id="fetchResumeId" placeholder="Enter Resume ID..." />
+    </div>
+    <button id="fetchResumeBtn" class="btn">Fetch Resumes</button>
+  </div>
+</div>
+
+<!-- Loader -->
+<div id="loader" class="loader-overlay">
+  <div class="loader-content">
+    <div class="spinner"></div>
+    <div class="loader-message" id="loaderMessage">Loading...</div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast">
+  <div class="toast-message" id="toastMessage"></div>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modalTitle">Data</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Action Button -->
+<button id="modalActionBtn" class="modal-action-btn"></button>
+
+<script>
+  const resumeForm = document.getElementById("resumeForm");
+  const resumeFilesInput = document.getElementById("resumeFiles");
+  const resumeJdInput = document.getElementById("resumeJdId");
+  const extractBtn = document.getElementById("extractResumeBtn");
+  const fetchResumeBtn = document.getElementById("fetchResumeBtn");
+  const modal = document.getElementById("modal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalBody = document.getElementById("modalBody");
+  const modalActionBtn = document.getElementById("modalActionBtn");
+  const loader = document.getElementById("loader");
+  const loaderMessage = document.getElementById("loaderMessage");
+  const toast = document.getElementById("toast");
+  const toastMessage = document.getElementById("toastMessage");
+  
+  let selectedResumes = [];
+  let currentView = null; // 'resumes' or 'scores'
+
+  // Utility Functions
+  function showLoader(message) {
+    loaderMessage.textContent = message;
+    loader.classList.add("active");
+  }
+
+  function hideLoader() {
+    loader.classList.remove("active");
+  }
+
+  function showToast(message, type = "success") {
+    toastMessage.textContent = message;
+    toast.className = `toast ${type} active`;
+    setTimeout(() => {
+      toast.classList.remove("active");
+    }, 3000);
+  }
+
+  function formatValue(value) {
+    if (value === null || value === undefined) return "N/A";
+    if (Array.isArray(value)) {
+      if (value.length === 0) return "N/A";
+      if (typeof value[0] === 'object') {
+        return value.map((item, i) => {
+          const entries = Object.entries(item).map(([k, v]) => `${k}: ${formatValue(v)}`).join('\n');
+          return `[${i + 1}]\n${entries}`;
+        }).join('\n\n');
+      }
+      return value.join(', ');
+    }
+    if (typeof value === 'object') {
+      return Object.entries(value).map(([k, v]) => `${k}: ${formatValue(v)}`).join('\n');
+    }
+    return String(value);
+  }
+
+  function closeModal() {
+    modal.classList.remove("active");
+    modalActionBtn.classList.remove("active");
+    currentView = null;
+  }
+
+  // Display Functions
+  function displayResumes(dataArray) {
+    currentView = 'resumes';
+    modalTitle.textContent = "Resume Data";
+    modalBody.innerHTML = "";
+    
+    dataArray.forEach((resume, idx) => {
+      const card = document.createElement("div");
+      card.className = "resume-card";
+
+      const chk = document.createElement("input");
+      chk.type = "checkbox";
+      chk.className = "card-checkbox";
+      chk.value = resume.resume_id || idx;
+      card.appendChild(chk);
+
+      const header = document.createElement("div");
+      header.className = "card-header";
+      header.textContent = `Resume ${idx + 1}: ${resume.candidate_name || "Unknown"}`;
+      card.appendChild(header);
+
+      const tbl = document.createElement("table");
+      tbl.className = "resume-table";
+      for (let key in resume) {
+        const row = tbl.insertRow();
+        const cell1 = row.insertCell(0);
+        const cell2 = row.insertCell(1);
+        cell1.textContent = key;
+        cell2.textContent = formatValue(resume[key]);
+      }
+      card.appendChild(tbl);
+      modalBody.appendChild(card);
+    });
+
+    modal.classList.add("active");
+    modalActionBtn.textContent = "Get Match Scores";
+    modalActionBtn.classList.add("active");
+  }
+
+  function displayScores(scoresData) {
+    currentView = 'scores';
+    modalTitle.textContent = "Resume Match Scores";
+    modalBody.innerHTML = "";
+    
+    scoresData.forEach((scoreItem) => {
+      const score = scoreItem.score;
+      const resumeScore = score.resume_score;
+      
+      const card = document.createElement("div");
+      card.className = `score-card ${score.shortlisted ? 'shortlisted' : 'not-shortlisted'}`;
+
+      const header = document.createElement("div");
+      header.className = "score-header";
+      
+      const headerLeft = document.createElement("div");
+      headerLeft.className = "score-header-left";
+      
+      const headerTitle = document.createElement("div");
+      headerTitle.className = "score-header-title";
+      headerTitle.textContent = `Resume ID: ${score.resume_id}`;
+      
+      const headerSubtitle = document.createElement("div");
+      headerSubtitle.className = "score-header-subtitle";
+      headerSubtitle.textContent = `Evaluation Results`;
+      
+      headerLeft.appendChild(headerTitle);
+      headerLeft.appendChild(headerSubtitle);
+      
+      const badge = document.createElement("div");
+      badge.className = `score-badge ${score.shortlisted ? 'badge-shortlisted' : 'badge-not-shortlisted'}`;
+      badge.textContent = score.shortlisted ? '✓ Shortlisted' : '✗ Not Shortlisted';
+      
+      header.appendChild(headerLeft);
+      header.appendChild(badge);
+      card.appendChild(header);
+
+      const body = document.createElement("div");
+      body.className = "score-body";
+
+      // Overall Score
+      const overallDiv = document.createElement("div");
+      overallDiv.className = "overall-score";
+      overallDiv.innerHTML = `
+        <div class="overall-score-value">${resumeScore.overall_score}%</div>
+        <div class="overall-score-label">Overall Match Score</div>
+      `;
+      body.appendChild(overallDiv);
+
+      // Metrics Grid
+      const metricsDiv = document.createElement("div");
+      metricsDiv.className = "score-metrics";
+      
+      const metrics = [
+        { label: 'Education Alignment', value: resumeScore.education_alignment },
+        { label: 'Experience Alignment', value: resumeScore.experience_alignment },
+        { label: 'Semantic Match', value: resumeScore.semantic_match_score },
+        { label: 'Must-Have Skills', value: resumeScore.must_have_match_score }
+      ];
+
+      metrics.forEach(metric => {
+        const metricCard = document.createElement("div");
+        metricCard.className = "metric-card";
+        metricCard.innerHTML = `
+          <div class="metric-label">${metric.label}</div>
+          <div class="metric-value">${metric.value}%</div>
+        `;
+        metricsDiv.appendChild(metricCard);
+      });
+      body.appendChild(metricsDiv);
+
+      // Summary
+      if (resumeScore.summary) {
+        const summaryDiv = document.createElement("div");
+        summaryDiv.className = "score-summary";
+        summaryDiv.innerHTML = `
+          <div class="score-summary-title">Summary</div>
+          <div class="score-summary-text">${resumeScore.summary}</div>
+        `;
+        body.appendChild(summaryDiv);
+      }
+
+      // Missing Skills
+      if (resumeScore.missing_must_have_skills && resumeScore.missing_must_have_skills.length > 0) {
+        const missingDiv = document.createElement("div");
+        missingDiv.className = "missing-skills";
+        const skillsList = resumeScore.missing_must_have_skills.map(skill => `<li>${skill}</li>`).join('');
+        missingDiv.innerHTML = `
+          <div class="missing-skills-title">Missing Must-Have Skills</div>
+          <ul class="missing-skills-list">${skillsList}</ul>
+        `;
+        body.appendChild(missingDiv);
+      }
+
+      card.appendChild(body);
+      modalBody.appendChild(card);
+    });
+
+    modal.classList.add("active");
+    modalActionBtn.classList.remove("active");
+  }
+
+  // Event Handlers
+  resumeFilesInput.addEventListener("change", () => {
+    selectedResumes = Array.from(resumeFilesInput.files);
+    const fileList = document.getElementById("resumeFileList");
+    if (selectedResumes.length) {
+      fileList.innerHTML = `<p><strong>${selectedResumes.length} file(s) selected:</strong></p>` +
+        selectedResumes.map(f => `<p>• ${f.name}</p>`).join("");
+    } else {
+      fileList.innerHTML = "";
+    }
+  });
+  let upload_session=null;
+  // Step 1: Upload Resumes
+  resumeForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const jdId = resumeJdInput.value.trim();
+    
+    if (!jdId) {
+      showToast("JD ID is required!", "error");
+      return;
+    }
+    if (!selectedResumes.length) {
+      showToast("Please select resumes to upload!", "error");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("jd_id", jdId);
+    selectedResumes.forEach(f => formData.append("resume", f));
+
+    showLoader("Uploading resumes...");
+    try {
+      const result = await axios.post("http://192.168.5.142:8000/upload/resume", formData);
+      upload_session=result.data
+      console.log(upload_session)
+      hideLoader();
+      showToast("Resumes uploaded successfully!");
+      extractBtn.style.display = "block";
+    } catch (error) {
+      hideLoader();
+      showToast("Failed to upload resumes. Please try again.", "error");
+      console.error(error);
+    }
+  });
+
+  // Step 2: Extract Resume Data
+  extractBtn.addEventListener("click", async () => {
+    showLoader("Extracting resume data...");
+    try {
+      // const res = await axios.get("http://192.168.5.129:8000/extract/resume");
+      const res = await axios.post("http://192.168.5.142:8000/extract_resume_fields",upload_session);
+      hideLoader();
+      
+      if (res.data.status === "success" && res.data.resume_data) {
+        showToast(`Successfully extracted ${res.data.resume_count || res.data.resume_data.length} resume(s)!`);
+        displayResumes(res.data.resume_data);
+      } else {
+        showToast("No resume data found.", "error");
+      }
+    } catch (error) {
+      hideLoader();
+      showToast("Failed to extract resume data.", "error");
+      console.error(error);
+    }
+  });
+
+  // Step 3: Get Match Scores (from modal action button)
+  modalActionBtn.addEventListener("click", async () => {
+    if (currentView !== 'resumes') return;
+
+    const checked = modalBody.querySelectorAll('.card-checkbox:checked');
+    const ids = Array.from(checked).map(c => c.value);
+    
+    if (!ids.length) {
+      showToast("Please select at least one resume!", "error");
+      return;
+    }
+
+    showLoader("Fetching match scores...");
+    try {
+      const res = await axios.get("http://192.168.5.142:8000/resume_score", { 
+        params: { resume_ids: ids.join(",") }
+      });
+      hideLoader();
+      
+      if (res.data.status === "success" && res.data.scores) {
+        showToast(`Fetched scores for ${res.data.count} resume(s)!`);
+        displayScores(res.data.scores);
+      } else {
+        showToast("No scores found.", "error");
+      }
+    } catch (error) {
+      hideLoader();
+      showToast("Failed to fetch match scores.", "error");
+      console.error(error);
+    }
+  });
+
+  // Step 4: Fetch Resume (separate flow)
+  fetchResumeBtn.addEventListener("click", async () => {
+    const jdId = document.getElementById("fetchJdId").value.trim();
+    const resumeId = document.getElementById("fetchResumeId").value.trim();
+    
+    if (!jdId && !resumeId) {
+      showToast("Please enter JD ID or Resume ID!", "error");
+      return;
+    }
+
+    showLoader("Fetching resume data...");
+    try {
+      const params = {};
+      if (jdId) params.jd_id = jdId;
+      if (resumeId) params.resume_id = resumeId;
+      
+      const res = await axios.get("http://192.168.5.142:8000/fetch_resumes", { params });
+      hideLoader();
+      
+      if (res.data.status === "success" && res.data.resume_data) {
+        showToast(`Fetched ${res.data.count} resume(s)!`);
+        displayResumes(res.data.resume_data);
+      } else {
+        showToast("No resume data found.", "error");
+      }
+    } catch (error) {
+      hideLoader();
+      showToast("Failed to fetch resume data.", "error");
+      console.error(error);
+    }
+  });
+</script>
+</body>
+</html>

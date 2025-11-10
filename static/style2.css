@@ -1,0 +1,159 @@
+/* 🌐 Global body styling */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #d3d3d3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* 📦 Login box container */
+.container {
+    width: 950px;
+    height: 750px;
+    display: flex;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+/* 🖼️ Left image panel */
+.left-panel {
+    flex: 1;
+    background-color: #074861;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.left-panel img {
+    max-width: 90%;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* 🧾 Right panel (form side) */
+.right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 30px 40px;
+    background-color: white;
+}
+
+.right-panel img {
+    width: 120px;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 22px;
+    color: #074861;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+/* 📝 Form styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Slightly increased spacing */
+}
+
+/* Label styling */
+label {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+/* 🔤 Input and dropdown styling */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+select {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #fafafa;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Focus effect */
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #074861;
+    box-shadow: 0 0 4px rgba(7, 72, 97, 0.3);
+}
+
+/* Dropdown custom styling */
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23074861' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    cursor: pointer;
+}
+
+/* 🖱️ Submit button */
+button[type="submit"] {
+    background-color: #074861;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #006b8f;
+    transform: translateY(-2px);
+}
+
+/* 📄 Signup text */
+.signup {
+    text-align: center;
+    font-size: 14px;
+    margin-top: 15px;
+}
+
+.signup a {
+    color: #0049b7;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.signup a:hover {
+    text-decoration: underline;
+}
+
+/* ⚙️ Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        width: 90%;
+        height: auto;
+    }
+
+    .left-panel {
+        display: none;
+    }
+
+    .right-panel {
+        padding: 20px;
+    }
+
+    h2 {
+        text-align: center;
+    }
+}
